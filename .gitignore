@@ -23,6 +23,8 @@ env/
 # Migrations
 watch/__init__.py
 watch/migrations/
+accounts_engine/__init__.py
+accounts_engine/migrations/
 
 # Distribution / packaging
 .Python

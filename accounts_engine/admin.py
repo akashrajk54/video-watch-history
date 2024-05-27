@@ -5,3 +5,4 @@ from accounts_engine.models import (CustomUser, InvalidatedToken)
 admin.site.register(CustomUser)
 admin.site.register(InvalidatedToken)
 
+

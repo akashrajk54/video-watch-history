@@ -18,7 +18,7 @@ from django.utils import timezone
 
 from accounts_engine.utils import (success_true_response, success_false_response, check_otp)
 from accounts_engine.models import (CustomUser, InvalidatedToken)
-from accounts_engine.serializer import (CustomUserSerializer, VerifyAccountSerializer)
+from accounts_engine.serializers import (CustomUserSerializer, VerifyAccountSerializer)
 
 from accounts_engine.sms import send_otp
 from accounts_engine.status_code import BAD_REQUEST, INTERNAL_SERVER_ERROR
@@ -164,8 +164,6 @@ class VerifyOTPViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            # To reduce api call, sending profile data along with the access token.
-
             data = request.data
             contact = data['contact']
             input_otp = data['otp']
@@ -191,18 +189,16 @@ class VerifyOTPViewSet(ModelViewSet):
                 logger_info.info('Successfully account activated.')
 
             refresh_token = RefreshToken.for_user(user)
-            phone_number = '+' + str(user.contact.country_code) + str(user.contact.national_number)
-            profile_data = {'username': user.username, 'about': user.about, 'contact': phone_number}
 
             # Create a dictionary containing the relevant data for your response
             response_data = {
                 'access_token': str(refresh_token.access_token),
-                'profile': profile_data,
             }
 
-            logger_info.info('Login successful')
+            message = 'Login successful'
+            logger_info.info(message)
 
-            return Response(success_true_response(data=response_data))
+            return Response(success_true_response(data=response_data, message=message))
 
         except Exception as e:
             message = str(e)

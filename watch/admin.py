@@ -1,3 +1,6 @@
 from django.contrib import admin
+from watch.models import (Video, WatchEvent)
 
-# Register your models here.
+# Register models here.
+admin.site.register(Video)
+admin.site.register(WatchEvent)

@@ -57,8 +57,7 @@ The video-watch-history contains a python application designed to track and log 
 The backend provides comprehensive functionality for managing video watch history, including user authentication, video uploading, watching videos, and retrieving watch history. Each API endpoint is designed to fulfill specific requirements, ensuring that users can perform desired actions efficiently and effectively.
 
 # Code Quality:
-The backend codebase adheres to best practices for clean, maintainable, and well-documented code. It follows the Django framework conventions, utilizes descriptive variable and function names, and includes comments and docstrings to explain the purpose and usage of different components. Unit tests are also provided to ensure the reliability and correctness of the code.
-
+The backend codebase adheres to best practices for clean, maintainable, and well-documented code. It follows the Django framework conventions, utilizes descriptive variable and function names, and includes comments and docstrings to explain the purpose and usage of different components.
 # User Experience:
 The backend aims to deliver a smooth and intuitive user experience by offering a straightforward API interface with clear and consistent endpoint naming and request/response formats. Error messages are informative and user-friendly, guiding users on how to rectify issues or provide necessary input.
 

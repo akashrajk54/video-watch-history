@@ -6,6 +6,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from django.core.cache import cache
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework.decorators import api_view
 
 from watch.models import Video, WatchEvent
 from accounts_engine.custom_pagination import CustomPagination
@@ -16,6 +20,11 @@ import logging
 logger = logging.getLogger(__name__)
 logger_info = logging.getLogger('info')
 logger_error = logging.getLogger('error')
+
+
+@api_view(['GET'])
+def Home(request):
+    return Response({'success': True})
 
 
 class VideoViewSet(ModelViewSet):
@@ -74,7 +83,7 @@ class VideoViewSet(ModelViewSet):
         except Exception as e:
             message = str(e)
             logger_error.error(message)
-            return Response(success_false_response(message='Internal server error'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(success_false_response(message='An unexpected error occurred. Please try again later.'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def list(self, request, *args, **kwargs):
         try:
@@ -94,12 +103,11 @@ class VideoViewSet(ModelViewSet):
         except Exception as e:
             message = str(e)
             logger_error.error(message)
-            return Response(success_false_response(message='Internal server error'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(success_false_response(message='An unexpected error occurred. Please try again later.'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WatchEventViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
-    queryset = WatchEvent.objects.all().order_by('-created_date')
     serializer_class = WatchEventSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
@@ -121,8 +129,35 @@ class WatchEventViewSet(ModelViewSet):
     def get_queryset(self):
         if self.action == 'watch_history':
             user = self.request.user
-            sorted_queryset = self.queryset.filter(user=user, is_delete=False).order_by('-created_date')
-            return sorted_queryset
+            limit = self.request.query_params.get('limit')
+            offset = self.request.query_params.get('offset')
+            start_date_str = self.request.query_params.get('start_date')
+            end_date_str = self.request.query_params.get('end_date')
+
+            if start_date_str and end_date_str:
+                start_date = timezone.datetime.strptime(start_date_str, "%Y-%m-%d")
+                end_date = timezone.datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(
+                    seconds=1)
+                queryset = WatchEvent.objects.filter(user=user, is_delete=False, created_date__range=[start_date, end_date])
+            else:
+                queryset = WatchEvent.objects.filter(user=user, is_delete=False)
+
+            cache_key = f'watch_history_{user.id}_limit={limit}_offset={offset}_start={start_date_str}_end={end_date_str}'
+            cached_queryset = cache.get(cache_key)
+
+            if cached_queryset is not None:
+                message = 'Watch history retrieved from cache successfully.'
+                logger_info.info(message)
+                return cached_queryset
+
+            cache.set(cache_key, queryset, timeout=300)
+
+            # Add cache_key to the user's cache list
+            cache_key_list = cache.get(f'cache_keys_{user.id}', [])
+            cache_key_list.append(cache_key)
+            cache.set(f'cache_keys_{user.id}', cache_key_list, timeout=300)
+
+            return queryset
 
     def create(self, request, *args, **kwargs):
         try:
@@ -130,29 +165,27 @@ class WatchEventViewSet(ModelViewSet):
             user = request.user
             requested_data = request.data.dict()
             requested_data['user'] = user.id
-            logger_info.info(f'Request data: {requested_data}')
 
             video_id = requested_data.get('video')
             if not Video.objects.filter(id=video_id).exists():
                 message = f'Video with id {video_id} does not exist.'
                 logger_error.error(message)
-                return Response(success_false_response(message=message), status=status.HTTP_400_BAD_REQUEST)
+                return Response(success_false_response(message='Video not found. Please try some other.'), status=status.HTTP_400_BAD_REQUEST)
 
             serializer = self.get_serializer(data=requested_data)
 
             try:
                 serializer.is_valid(raise_exception=True)
-                serializer.save(user=user)
-                message = 'Watch event logged successfully.'
-                logger_info.info(f'{message} for {user.username}')
-                # Serialize the Video object before returning it in the response
-                video_instance = Video.objects.get(id=requested_data['video'])
-                video_serializer = VideoSerializer(video_instance)
-                video_data = video_serializer.data
-                # Remove the 'user' field from the serialized video data
-                video_data.pop('user')
+                video_watched = serializer.save(user=user)
 
-                return Response(success_true_response(data=video_data, message=message), status=status.HTTP_201_CREATED)
+                # Invalidate the cache for watch history
+                self.invalidate_watch_history_cache(user.id)
+                logger_info.info(f'Cache invalidated for {user.username}')
+
+                message = 'Watch event created successfully.'
+                logger_info.info(f'{message} for {user.username}')
+
+                return Response(success_true_response(data={'id': video_watched.id}, message=message), status=status.HTTP_201_CREATED)
 
             except ValidationError as e:
                 error_detail = e.detail
@@ -165,7 +198,15 @@ class WatchEventViewSet(ModelViewSet):
         except Exception as e:
             message = str(e)
             logger_error.error(message)
-            return Response(success_false_response(message='Internal server error'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(success_false_response(message='An unexpected error occurred. Please try again later.'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def invalidate_watch_history_cache(self, user_id):
+        """ Invalidate cache keys for the watch history of a user. """
+        cache_key_list = cache.get(f'cache_keys_{user_id}', [])
+        for key in cache_key_list:
+            logger_info.info(f'Deleting cache key: {key}')
+            cache.delete(key)
+        cache.delete(f'cache_keys_{user_id}')
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def watch_history(self, request):
@@ -186,5 +227,4 @@ class WatchEventViewSet(ModelViewSet):
         except Exception as e:
             message = str(e)
             logger_error.error(message)
-            return Response(success_false_response(message='Internal server error'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response(success_false_response(message='An unexpected error occurred. Please try again later.'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)

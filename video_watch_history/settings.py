@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
@@ -27,6 +27,12 @@ REST_FRAMEWORK = {
   'DEFAULT_RENDERER_CLASSES': (
     'rest_framework.renderers.JSONRenderer',
   ),
+  'DEFAULT_THROTTLE_CLASSES': [
+    'rest_framework.throttling.UserRateThrottle',
+  ],
+  'DEFAULT_THROTTLE_RATES': {
+    'user': '100/hour', # Please adjust
+  }
 }
 
 # Application definition
@@ -215,3 +221,14 @@ AUTH_USER_MODEL = 'accounts_engine.CustomUser'
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+
+
+# Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+

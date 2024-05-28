@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.utils import timezone
 from accounts_engine.models import BaseClass, CustomUser
 
 
@@ -29,6 +30,7 @@ class WatchEvent(BaseClass):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='watch_events')
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='watch_events')
+    created_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ['-created_date']

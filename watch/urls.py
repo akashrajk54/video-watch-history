@@ -1,11 +1,12 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import VideoViewSet, WatchEventViewSet
+from rest_framework import routers
+from watch.views import VideoViewSet, WatchEventViewSet, Home
 
-router = DefaultRouter()
+router = routers.SimpleRouter()
 router.register(r'videos', VideoViewSet, basename='video')
 router.register(r'watch', WatchEventViewSet, basename='watch')
 
 urlpatterns = [
+    path('', Home, name='home'),
     path('', include(router.urls)),
 ]

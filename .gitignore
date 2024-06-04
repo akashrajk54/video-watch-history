@@ -25,6 +25,8 @@ watch/__init__.py
 watch/migrations/
 accounts_engine/__init__.py
 accounts_engine/migrations/
+elasticsearchs/__init__.py
+elasticsearchs/migrations/
 
 # Distribution / packaging
 .Python
@@ -141,6 +143,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env/*
 .venv
 env/
 venv/

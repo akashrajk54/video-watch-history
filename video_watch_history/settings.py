@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'phonenumber_field',
+    'elasticsearchs',
 ]
 
 MIDDLEWARE = [
@@ -229,6 +230,13 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
     }
+}
+
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200',  # Adjust the URL according to your Elasticsearch configuration
+    },
 }
 
 

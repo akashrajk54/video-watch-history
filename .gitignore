@@ -18,7 +18,7 @@ __pycache__/
 # Environments
 .venv
 env/
-.env/
+.env
 
 # Migrations
 watch/__init__.py

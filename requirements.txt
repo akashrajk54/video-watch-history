@@ -8,4 +8,7 @@ django-filter==23.5
 django-phonenumber-field==7.3.0
 phonenumbers==8.13.27
 twilio==8.9.1
-
+elasticsearch==8.13.2
+django-elasticsearch-dsl==8.0
+django-elasticsearch-dsl-drf==0.22.5
+openai==0.28.1

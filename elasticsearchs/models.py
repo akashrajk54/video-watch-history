@@ -1,8 +1,9 @@
 from django.db import models
+from accounts_engine.models import BaseClass
 from django.utils.translation import gettext_lazy as _
 
 
-class Actor(models.Model):
+class Actor(BaseClass):
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -14,7 +15,7 @@ class Actor(models.Model):
         verbose_name_plural = 'Actors'
 
 
-class Director(models.Model):
+class Director(BaseClass):
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -26,7 +27,7 @@ class Director(models.Model):
         verbose_name_plural = 'Directors'
 
 
-class Genre(models.Model):
+class Genre(BaseClass):
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -38,7 +39,7 @@ class Genre(models.Model):
         verbose_name_plural = 'Genres'
 
 
-class Award(models.Model):
+class Award(BaseClass):
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -50,7 +51,7 @@ class Award(models.Model):
         verbose_name_plural = 'Awards'
 
 
-class MediaContent(models.Model):
+class MediaContent(BaseClass):
     class ContentType(models.TextChoices):
         MOVIE = 'MV', _('Movie')
         TV_SHOW = 'TV', _('TV Show')

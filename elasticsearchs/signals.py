@@ -1,12 +1,10 @@
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
-from django.apps import apps
 from elasticsearchs.models import Actor, Director, Genre, Award, MediaContent
 
 
 @receiver(post_migrate)
 def populate_data(sender, **kwargs):
-    print('==================================================================')
     if sender.name == 'elasticsearchs':  # Replace 'yourapp' with your actual app name
         # Actors
         actors = [

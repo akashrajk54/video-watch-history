@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'phonenumber_field',
     'elasticsearchs',
+    "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 MIDDLEWARE = [
@@ -247,8 +249,8 @@ CACHES = {
 
 
 ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'http://localhost:9200',  # Adjust the URL according to your Elasticsearch configuration
+    "default": {
+        "hosts": "elasticsearch:9200",
     },
 }
 

@@ -52,6 +52,24 @@ The video-watch-history contains a python application designed to track and log 
       python manage.py runserver
       (by default it will use 8000 port)
 
+# To use ElasticSearch(skip 7, 8, 9 points and start from 10 after 6)
+   10. Install Docker.
+   11. Create a Dockerfile for the project image creation.
+   12. Configure the Docker Compose file to include services for the Django project, PostgreSQL database, Elasticsearch container, and Kibana container.
+   13. Build and start the Docker containers:
+        docker-compose up --build
+   14. Run migrations to create the database schema:
+       docker-compose exec web python manage.py makemigrations
+       docker-compose exec web python manage.py migrate
+   15. Create a superuser (admin) account:
+       docker-compose exec web python manage.py createsuperuser
+   16. Create an Elasticsearch index and document:
+       docker-compose exec web python manage.py search_index --create
+   17. Check if all fine:
+       This below command will return information about all indices in Elasticsearch, and you should see mediacontents among them.
+       curl -X GET "localhost:9200/_cat/indices?v"
+       
+
 
 # Functionality:
 The backend provides comprehensive functionality for managing video watch history, including user authentication, video uploading, watching videos, and retrieving watch history. Each API endpoint is designed to fulfill specific requirements, ensuring that users can perform desired actions efficiently and effectively.

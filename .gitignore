@@ -6,6 +6,28 @@ __pycache__/
 # C extensions
 *.so
 
+# If you are using PyCharm #
+# User-specific stuff
+.idea/*
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+# Environments
+.venv
+env/
+.env
+
+# Migrations
+watch/__init__.py
+watch/migrations/
+accounts_engine/__init__.py
+accounts_engine/migrations/
+elasticsearchs/__init__.py
+elasticsearchs/migrations/
+
 # Distribution / packaging
 .Python
 build/
@@ -121,6 +143,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env/*
 .venv
 env/
 venv/
